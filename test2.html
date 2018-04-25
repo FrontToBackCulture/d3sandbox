@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<script defer src="https://use.fontawesome.com/releases/v5.0.10/js/all.js" integrity="sha384-slN8GvtUJGnv6ca26v8EzVaR9DC58QEwsIk9q1QXdCU8Yu8ck/tL/5szYlBbqmS+" crossorigin="anonymous"></script>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<style>
+
+    .axis .domain {
+        display: none;
+    }
+
+
+    .d3-bar:hover {
+        opacity: 0.9;
+    }
+
+    .d3-chart-label {
+        font-size: 12px;
+    }
+
+    #legend_tooltip {
+        position: absolute;
+        width: 100px;
+        height: auto;
+        padding: 10px;
+        z-index: 99;
+        background-color: black;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        border-radius: 10px;
+        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+    }
+
+    #legend_tooltip.hidden {
+        display: none;
+    }
+
+    #legend_tooltip p {
+        margin: 0;
+        font-family: helvetica;
+        font-size: 10px;
+        color: white;
+        line-height: 10px;
+    }
+</style>
+
+<script src="d3.js"></script>
+<div id="legend_tooltip" class="hidden">
+    <p><span id="legend_value">100</span></p>
+</div>
+<div class="card card-1">
+    <div class="row" style="padding-top: 10px;">
+        <div class="legend4"></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="content"><svg width="960" height="500"></svg></div>
+        </div>
+    </div>
+</div>
+<script>
+
+    String.prototype.trunc =
+        function( n, useWordBoundary ){
+            if (this.length <= n) { return this; }
+            var subString = this.substr(0, n-1);
+            return (useWordBoundary
+                ? subString.substr(0, subString.lastIndexOf(' '))
+                : subString) + "...";
+        };
+
+
+    var svg = d3.select("svg"),
+        margin = {top: 20, right: 20, bottom: 30, left: 40},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom,
+        width_legend = +svg.attr("width") - margin.left - margin.right,
+        height_legend = 25,
+        g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var dataset, keys, fKeys, stackedDataForMax;
+
+    /* Rectangle to receive user events */
+
+
+    // Melvin: Define the color scheme based on D3 schemeDart2
+    var z = d3.scaleOrdinal(d3["schemeDark2"]);
+
+    d3.dsv(",", "data.csv", function(d, i , columns) {
+        for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+        return d;
+    }).then(function(data) {
+
+        dataset = data;
+        var keys = data.columns.slice(1); //Melvin: make the columns as keys for the data
+
+
+        var dataL = 0;
+        var offset = 55; //Melvin: space between legend
+
+        var svgLegned4 = d3.select(".legend4").append("svg")
+            .attr("width", width_legend)
+            .attr("height", height_legend);
+
+        var dataL = 0;
+        var offset = 55; //Melvin: space between legend
+
+        var legend4 = svgLegned4.selectAll('.legend4')
+            .data(keys.slice().reverse())
+            .enter().append('g')
+            .attr("class", "legend4")
+            .attr("transform", function (d, i) {
+                if (i === 0) {
+                    dataL = d.length + offset;
+                    return "translate(0,0)";
+                } else {
+                    var newdataL = dataL
+                    dataL += d.length + offset;
+                    return "translate(" + (newdataL) + ",0)";
+                }
+            });
+
+        legend4.append("circle")
+            .attr("cx", 30)
+            .attr("cy", 10)
+            .attr("r", 5)
+            .attr("fill", z)
+            .attr("stroke", z)
+            .on("click", function (d) {
+                update(d);
+            });
+
+        legend4.append('text')
+            .attr("x", 40)
+            .attr("y", 10)
+            .attr("dy", ".32em")
+            .text(function (d, i) {
+                return d.trunc(10);
+            })
+            .attr("fill", "#000")
+            .attr("font-size", "10px")
+            .style("text-anchor", "start");
+
+    })
+
+
+    var filtered = [];
+
+
+    function update(d) {
+
+
+        // update legend:
+        legend4.selectAll("circle")
+            .transition()
+            .attr("fill",function(d) {
+                if (filtered.length) {
+                    if (filtered.indexOf(d) == -1) {
+                        return z(d);
+                    }
+                    else {
+                        return "white";
+                    }
+                }
+                else {
+                    return z(d);
+                }
+            })
+            .duration(100);
+
+    }
+
+</script>
