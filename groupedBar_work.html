@@ -221,7 +221,6 @@
         dataset=data;
 
         var keys = data.columns.slice(1); //Melvin: make the columns as keys for the data
-        console.log(keys);
 
         x0Scale.domain(data.map(function(d) {
             return d.State;
@@ -329,6 +328,7 @@
             .enter().append('g')
             .attr("class", "legend4")
             .attr("transform", function (d, i) {
+                console.log(d)
                 if (i === 0) {
                     dataL = d.length + offset;
                     return "translate(0,0)";
@@ -410,6 +410,7 @@
 
                 //Reset all to black
                 bar.attr("fill", function(d) {
+                    console.log(d.key);
                     return z(d.key);
                     })
 

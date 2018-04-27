@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+/* 13. Basic Styling with CSS */
+
+/* Style the lines by removing the fill and applying a stroke */
+.line {
+    fill: none;
+    stroke: #ffab00;
+    stroke-width: 3;
+}
+
+/* Style the dots by assigning a fill and stroke */
+.dot {
+    fill: #ffab00;
+    stroke: #fff;
+}
+
+</style>
+<body>
+<script src="d3.js"></script>
+<!-- load the d3.js library -->
+<div class="card card-1">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
+            <h2>by IT Area</h2><span><input type="radio" name="highlightPreset" value="none" checked="true"> None
+			<input type="radio" name="highlightPreset" value="highlight"> Highlight</span>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 10px;">
+        <div class="legend4"></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="content"><svg></svg></div>
+        </div>
+    </div>
+</div>
+<script>
+
+    String.prototype.trunc =
+        function( n, useWordBoundary ){
+            if (this.length <= n) { return this; }
+            var subString = this.substr(0, n-1);
+            return (useWordBoundary
+                ? subString.substr(0, subString.lastIndexOf(' '))
+                : subString) + "...";
+        };
+
+    var margin = {top: 50, right: 50, bottom: 50, left: 50}
+        , width = window.innerWidth - margin.left - margin.right // Use the window's width
+        , height = window.innerHeight - margin.top - margin.bottom; // Use the window's height
+        width_legend = 600 - margin.left - margin.right,
+        height_legend = 25;
+        // width = +svg.attr("width") - margin.left - margin.right,
+        // height = +svg.attr("height") - margin.top - margin.bottom
+
+    // Parse the date / time
+    var parseDate = d3.timeParse("%b %Y");
+
+    // Set the ranges
+    var xScale = d3.scaleTime().range([0, width]);
+    var yScale = d3.scaleLinear().range([height, 0]);
+
+    // Define the line
+    var priceline = d3.line()
+        .x(function(d) { return xScale(d.date); })
+        .y(function(d) { return yScale(d.price); });
+
+    // 7. d3's line generator
+    var line = d3.line()
+        .x(function(d, i) { return xScale(d.date); }) // set the x values for the line generator
+        .y(function(d) { return yScale(d.price); }) // set the y values for the line generator
+        .curve(d3.curveMonotoneX) // apply smoothing to the line
+
+    // Adds the svg canvas
+    var svg = d3.select("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    // Melvin: Define the color scheme based on D3 schemeDart2
+    var z = d3.scaleOrdinal(d3["schemeDark2"]);
+
+    var svgLegned4 = d3.select(".legend4").append("svg")
+        .attr("width", width_legend)
+        .attr("height", height_legend)
+        .append("g");
+
+    var dataL = 0;
+    var offset = 55; //Melvin: space between legend
+    var newdataL;
+    var keys = [];
+
+    // Get the data
+        d3.dsv(",", "stocks2.csv", function(d) {
+            return {
+                date: parseDate(d.date),
+                price: +d.price,
+                symbol: d.symbol
+            };
+        }).then(function(data){
+
+        n = data.length;
+
+            // Scale the range of the data
+        xScale.domain(d3.extent(data, function(d) { return d.date; }));
+        yScale.domain([0, d3.max(data, function(d) { return d.price; })]);
+
+        // Nest the entries by symbol
+        var dataNest = d3.nest()
+            .key(function(d) {return d.symbol;})
+            .entries(data);
+
+        legendSpace = width/dataNest.length; // spacing for the legend
+
+
+
+        // Loop through each symbol / key
+        dataNest.forEach(function(d,i) {
+
+            keys.push(d.key);
+            console.log(keys);
+
+            svg.append("path")
+                .attr("class", "line")
+                .style("stroke", function() { // Add the colours dynamically
+                    return d.z = z(d.key); })
+                .attr("id", 'tag'+d.key.replace(/\s+/g, '')) // assign an ID
+                .attr("d", priceline(d.values));
+
+            // Add the Legend
+            svg.append("text")
+                .attr("x", (legendSpace/2)+i*legendSpace)  // space legend
+                .attr("y", height + (margin.bottom/2)+ 5)
+                .attr("class", "legend")    // style the legend
+                .style("fill", function() { // Add the colours dynamically
+                    return d.z = z(d.key); })
+                .on("click", function(){
+                    // Determine if current line is visible
+                    var active   = d.active ? false : true,
+                        newOpacity = active ? 0 : 1;
+                    // Hide or show the elements based on the ID
+                    d3.select("#tag"+d.key.replace(/\s+/g, ''))
+                        .transition().duration(100)
+                        .style("opacity", newOpacity);
+                    // Update whether or not the elements are active
+                    d.active = active;
+                })
+                .text(d.key);
+
+            svgLegned4.append("circle")
+                .attr("transform", function () {
+                    if (i === 0) {
+                        dataL = (d.key).length + offset;
+                        return "translate(0,0)";
+                    } else {
+                        newdataL = dataL;
+                        dataL += (d.key).length + offset;
+                        return "translate(" + (newdataL) + ",0)";
+                    }
+                })
+                .attr("cx", 30)
+                .attr("cy", 10)
+                .attr("r", 5)
+                .attr("fill", z(d.key))
+                .attr("stroke", z(d.key))
+                .on("click", function(){
+                    // Determine if current line is visible
+                    var active   = d.active ? false : true,
+                        newOpacity = active ? 0 : 1;
+                    // Hide or show the elements based on the ID
+                    d3.select("#tag"+d.key.replace(/\s+/g, ''))
+                        .transition().duration(100)
+                        .style("opacity", newOpacity);
+                    // Update whether or not the elements are active
+                    d.active = active;
+                    update(d.key);
+                });
+
+            // Add the Legend
+            svgLegned4.append("text")
+                .attr("transform", function () {
+                    if (i === 0) {
+                        dataL = (d.key).length + offset;
+                        return "translate(0,0)";
+                    } else {
+                        //var newdataL = dataL;
+                        //dataL += (d.key).length + offset;
+                        return "translate(" + (newdataL) + ",0)";
+                    }
+                })
+                .attr("x", 40)  // space legend
+                .attr("y", 15)
+                .attr("class", "legendText")    // style the legend
+                .style("fill", function() { // Add the colours dynamically
+                    return d.z = z(d.key); })
+                .text(d.key);
+
+        });
+
+        // Add the X Axis
+        svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(xScale));
+
+        // Add the Y Axis
+        svg.append("g")
+            .attr("class", "axis")
+            .call(d3.axisLeft(yScale));
+    });
+
+    var filtered = [];
+
+    function update(d) {
+
+        // add the clicked key if not included:
+        if (filtered.indexOf(d) == -1) {
+            filtered.push(d);
+            // if all bars are un-checked, reset:
+            if(filtered.length == keys.length) filtered = [];
+        }
+        // otherwise remove it:
+        else {
+            filtered.splice(filtered.indexOf(d), 1);
+        }
+
+        // update legend:
+        svgLegned4.selectAll("circle")
+                .transition()
+            .attr("fill",function() {
+                console.log(d)
+                if (filtered.length) {
+                    if (filtered.indexOf(d) == -1) {
+                        return z(d);
+                    }
+                    else {
+                        return "white";
+                    }
+                }
+                else {
+                    return z(d);
+                }
+            })
+            .duration(100);
+    }
+</script>
+</body>
