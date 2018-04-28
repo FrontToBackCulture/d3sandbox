@@ -1,0 +1,81 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    color: #333333;
+}
+
+/* Add shadow effect to chart. If you don't like it, get rid of it. */
+svg {
+    -webkit-filter: drop-shadow( 0px 3px 3px rgba(0,0,0,.3) );
+    filter: drop-shadow( 0px 3px 3px rgba(0,0,0,.25) );
+}
+
+/*Styling for the lines connecting the labels to the slices*/
+polyline{
+    opacity: .3;
+    stroke: black;
+    stroke-width: 2px;
+    fill: none;
+}
+
+/* Make the percentage on the text labels bold*/
+.labelName tspan {
+    font-style: normal;
+    font-weight: 700;
+}
+
+/* In biology we generally italicise species names. */
+.labelName {
+    font-size: 0.6em;
+    font-style: italic;
+}
+
+.card {
+    background: #fff;
+    border-radius: 2px;
+    display: inline-block;
+    /*height: 300px;*/
+    height: 420px;
+    margin: 1rem;
+    position: relative;
+    width: 550px;
+    /*width: 300px;*/
+}
+
+.card-1 {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+}
+
+.card .heading h1 {
+    font-size: 15px;
+    font-family: sans-serif;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top:15px;
+    margin-bottom:5px;
+    color: #333;
+}
+
+.card .heading h2 {
+    font-size: 14px;
+    font-family: sans-serif;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top:5px;
+    margin-bottom:5px;
+    color: #666;
+}
+
+span {
+    font-size: 10px;
+    font-family: sans-serif;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+tspan {
+    font-size: 10px;
+    font-family: sans-serif;
+    padding-left: 10px;
+    padding-right: 10px;
+}

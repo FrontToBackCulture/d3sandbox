@@ -129,7 +129,7 @@
 
 </style>
 
-<script src="d3.js"></script>
+<script src="../javascript/d3.js"></script>
 <div id="tooltip" class="hidden">
     <p><strong>Important Label Heading</strong></p>
     <p><span id="value">100</span></p>
@@ -157,6 +157,7 @@
         </div>
     </div>
 </div>
+
 <script>
 
     String.prototype.trunc =
@@ -168,8 +169,6 @@
                 : subString) + "...";
         };
 
-    var dataset, bar;
-
 
     var svg = d3.select("svg"),
         margin = {top: 20, right: 20, bottom: 30, left: 40},
@@ -179,60 +178,85 @@
         height_legend = 25,
         g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    // Melvin: The scale spacing the groups, setup an ordinal scale for x for the groups and set the output range
-    var x0Scale = d3.scaleBand()
-        .rangeRound([0, width])
-        .paddingInner(0.1);
+    var dataset, keys, fKeys, stackedDataForMax;
+
+    /* Rectangle to receive user events */
+
+
+    // Melvin: Define the color scheme based on D3 schemeDart2
+    var z = d3.scaleOrdinal(d3["schemeDark2"]);
 
     // Melvin: The scale for spacing each group's bar: setup an ordinal scale for x the individual items within the groups
-    var x1Scale = d3.scaleBand()
-        .padding(0.05);
+    var xScale = d3.scaleBand()
+        .rangeRound([0, width])
+        .padding(0.1);
 
     // Melvin: The scale for y axis which is linear in nature and set the output range
     var yScale = d3.scaleLinear()
         .rangeRound([height, 0]);
 
-    // var z = d3.scaleOrdinal()
-    //     .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
-
-    // Melvin: Define the color scheme based on D3 schemeDart2
-    var z = d3.scaleOrdinal(d3["schemeDark2"]);
-
     //Define X axis
     var xAxis = d3.axisBottom()
-        .scale(x0Scale);
+        .scale(xScale)
+        .tickSizeInner(2)
+        .tickSizeOuter(0);
 
-     //Define Y axis
-     var yAxis = d3.axisLeft()
-         .scale(yScale)
-         .ticks(null, "s");
+    //Define Y axis
+    var yAxis = d3.axisLeft()
+        .scale(yScale)
+        .ticks(null, "s");
 
     // gridlines in y axis function
     function make_y_gridlines() {
         return d3.axisLeft(yScale);
     }
 
-    d3.dsv(",", "data.csv", function(d, i , columns) {
+    /*var xAxisGroup = svg.append('g').attr('class', 'x-axis-group').append('g').attr('class', 'x d3-axis').attr('transform', 'translate(0,' + height + ')');
+    */
+    var yAxisGroup = svg.append('g').attr('class', 'y d3-axis').attr('transform', 'translate(0,0)');
+
+    var gg = svg.append('g').attr("class", "d3-group-wrap"); // keep d3 groups organized and used for correct clipping
+
+    var yAxisLabel = svg.append('text')
+        .attr('class', 'd3-chart-label label-y-axis')
+        .text('Y Axis Units')
+        .attr('transform', 'rotate(-90)')
+        .attr('y', -margin.left / 2)
+        .attr('dy', -5)
+        .attr('text-anchor', 'middle');
+
+    var tickArr = [];
+
+    d3.dsv(",", "../data/data.csv", function(d, i , columns) {
         for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
         return d;
     }).then(function(data){
         // if (error) throw error;
 
-        dataset=data;
+        dataset= data;
 
-        var keys = data.columns.slice(1); //Melvin: make the columns as keys for the data
+        keys = data.columns.slice(1); //Melvin: make the columns as keys for the data
+        fKeys = keys.slice();
 
-        x0Scale.domain(data.map(function(d) {
-            return d.State;
-        })); //Melvin: set the input value for the x scale with the defined domain
+        //calculate total for each keys
+        dataset.forEach(function (d, i) {
+            d.total = d3.sum(d3.values(d).slice(1));
+        });
 
-        x1Scale.domain(keys).rangeRound([0, x0Scale.bandwidth()]); //Melvin: set the range for individual item to meet the individual group width
+        var stackedData = d3.stack().keys(fKeys)(dataset);
 
-        yScale.domain([0, d3.max(data, function(d) {
-            return d3.max(keys, function(key) {
-                return d[key];
+        var maxDataY = 1.2 * d3.max(stackedData.map(function (d) {
+            return d3.max(d, function (innerD) {
+                return innerD[1];
             });
-        })]).nice(); //Melvin: set the input and find the max value based on the max value by iterating through all of its value in the array
+        }));
+
+        xScale.domain(dataset.map(function (d) {
+            return d.State;
+        }));
+
+        yScale.domain([0, maxDataY])
+            .nice();
 
         svg.append("g")
             .attr("class", "grid")
@@ -241,39 +265,43 @@
                 .tickFormat("")
             );
 
-        //Melvin: draw the rectangle on screen for each bar
-        bar = g.append("g")
-            .selectAll("g")
-            .data(data)
-            .enter().append("g")
-            .attr("class","bar")
-            .attr("transform", function(d) {
-                return "translate(" + x0Scale(d.State) + ",0)";
-            })
-            .selectAll("rect")
-            .data(function(d) {
-                return keys.map(function(key) {
-                    return {
-                        key: key,
-                        value: d[key]
-                    };
-                });
-            })
-            .enter().append("rect")
-            .attr("x", function(d) {
-                return x1Scale(d.key);
-            })
-            .attr("y", function(d) {
-                return yScale(d.value);
-            })
-            .attr("width", x1Scale.bandwidth())
-            .attr("height", function(d) {
-                return height - yScale(d.value);
-            })
-            .attr("fill", function(d) {
+        // update selection
+
+        stackedBars = gg
+            .selectAll(".d3-group")
+            .data(stackedData, function (__data__, i, group) {
+                return __data__.key;
+            });
+
+        // enter selection
+        stackedBarsEnter = stackedBars
+            .enter()
+            .append("g")
+            .attr("fill", function (d) {
                 return z(d.key);
             })
-            .on("mouseover", function(d) {
+            .attr("class", function (d, i) {
+                return "d3-group d3-group-" + i;
+            });
+
+        // add path on enter
+        bars = stackedBarsEnter
+            .selectAll('rect')
+            .data(function (d) {
+                return d;
+            })
+            .enter().append("rect")
+            .attr('class', 'd3-rect')
+            .attr("x", function (d) {
+                return xScale(d.data.State) + 40;
+            })
+            .attr("y", function (d) {
+                return yScale(d[1]) + 20;
+            })
+            .attr("height", function (d) {
+                return yScale(d[0]) - yScale(d[1]);
+            })
+            .attr("width", xScale.bandwidth()).on("mouseover", function(d) {
 
                 //Get this bar's x/y values, then augment for the tooltip
                 // var xPosition = parseFloat(d3.select(this).attr("x")) + x1Scale.bandwidth() / 2;
@@ -285,7 +313,7 @@
                     .style("left", xPosition + "px")
                     .style("top", yPosition + "px")
                     .select("#value")
-                    .text(d.value);
+                    .text(d[1]-d[0]);
 
                 //Show the tooltip
                 d3.select("#tooltip").classed("hidden", false);
@@ -316,6 +344,7 @@
             .attr("text-anchor", "start")
             .text("Population"); //axes label
 
+
         var svgLegned4 = d3.select(".legend4").append("svg")
             .attr("width", width_legend)
             .attr("height", height_legend);
@@ -328,7 +357,6 @@
             .enter().append('g')
             .attr("class", "legend4")
             .attr("transform", function (d, i) {
-                console.log(d)
                 if (i === 0) {
                     dataL = d.length + offset;
                     return "translate(0,0)";
@@ -356,25 +384,24 @@
             })
             .attr("fill", "#000")
             .attr("font-size", "10px")
-            .style("text-anchor", "start")
-            .on("mouseover", function(d) {
+            .style("text-anchor", "start").on("mouseover", function(d) {
 
-                //Get this bar's x/y values, then augment for the tooltip
-                // var xPosition = parseFloat(d3.select(this).attr("x")) + x1Scale.bandwidth() / 2;
-                var xPosition = d3.event.pageX+10;
-                var yPosition = d3.event.pageY;
+            //Get this bar's x/y values, then augment for the tooltip
+            // var xPosition = parseFloat(d3.select(this).attr("x")) + x1Scale.bandwidth() / 2;
+            var xPosition = d3.event.pageX+10;
+            var yPosition = d3.event.pageY;
 
-                //Update the tooltip position and value
-                d3.select("#legend_tooltip")
-                    .style("left", xPosition + "px")
-                    .style("top", yPosition + "px")
-                    .select("#legend_value")
-                    .text(d);
+            //Update the tooltip position and value
+            d3.select("#legend_tooltip")
+                .style("left", xPosition + "px")
+                .style("top", yPosition + "px")
+                .select("#legend_value")
+                .text(d);
 
-                //Show the tooltip
-                d3.select("#legend_tooltip").classed("hidden", false);
+            //Show the tooltip
+            d3.select("#legend_tooltip").classed("hidden", false);
 
-            })
+        })
             .on("mouseout", function() {
 
                 //Hide the tooltip
@@ -387,14 +414,14 @@
             .attr("class", "line benchmark")
             .attr("x1", margin.left)
             .attr("x2", width)
-            .attr("y1", yScale(5000000))
-            .attr("y2", yScale(5000000));
+            .attr("y1", yScale(5000000)+20)
+            .attr("y2", yScale(5000000)+20);
 
         //Label benchmark line
         svg.append("text")
             .attr("class", "benchmarkLable")
             .attr("x", margin.left + 10)
-            .attr("y", yScale(5000000) - 10)
+            .attr("y", yScale(5000000) - 10 + 20)
             .attr("dy", "0.32em")
             .attr("fill", "#000")
             .attr("font-size", "10px")
@@ -402,17 +429,16 @@
             .attr("text-anchor", "start")
             .text("Benchmark");
 
-        //On button click, execute highlight or not to highlight
+//On button click, execute highlight or not to highlight
         d3.selectAll("input")
             .on("click", function() {
 
                 var view = d3.select(this).node().value;
 
                 //Reset all to black
-                bar.attr("fill", function(d) {
-                    console.log(d.key);
-                    return z(d.key);
-                    })
+                stackedBarsEnter.attr("fill", function(d) {
+                         return z(d.key);
+                    });
 
                 //Filter and highlight based on different conditions
                 switch (view) {
@@ -424,12 +450,12 @@
                         break;
 
                     case "none":
+                        redraw();
                     default:
                     //Do nothing more
                 }
 
             });
-
 
         var filtered = [];
 
@@ -439,7 +465,36 @@
 
         function update(d) {
 
-            console.log(d);
+            // Go through both keys and fKeys to find out proper
+            // position to insert keyToToggle if it is to be inserted
+            var i, j;
+            for (i = 0, j = 0; i < keys.length; i++) {
+                // If we hit the end of fKeys, keyToToggle
+                // should be last
+                if (j >= fKeys.length) {
+                    fKeys.push(d);
+                    break;
+                }
+                // if we found keyToToggle in fKeys - remove it
+                if (fKeys[j] == d) {
+                    // remove it
+                    fKeys.splice(j, 1);
+                    break;
+                }
+
+                // we found keyToToggle in the original collection
+                // AND it was not found at fKeys[j]. It means
+                // it should be inserted to fKeys at position "j"
+                if (keys[i] == d) {
+                    // add it
+                    fKeys.splice(j, 0, d);
+                    break;
+                }
+
+                if (keys[i] == fKeys[j])
+                    j++;
+            }
+
             //
             // Update the array to filter the chart by:
             //
@@ -464,13 +519,23 @@
                     newKeys.push(d);
                 }
             })
-            x1Scale.domain(newKeys).rangeRound([0, x0Scale.bandwidth()]);
-            yScale.domain([0, d3.max(data, function(d) {
-                return d3.max(keys, function(key) {
-                    if (filtered.indexOf(key) == -1)
-                        return d[key];
+
+            stackedData = d3.stack().keys(fKeys)(dataset);
+
+            maxDataY = 1.2 * d3.max(stackedData.map(function (d) {
+                return d3.max(d, function (innerD) {
+                    return innerD[1];
                 });
-            })]).nice();
+            }));
+
+
+            xScale.domain(dataset.map(function (d) {
+                return d.State
+            }));
+
+            yScale.domain([0, maxDataY])
+                .rangeRound([height, 0]);
+
 
             // update the y axis:
             svg.select(".y")
@@ -478,37 +543,77 @@
                 .call(yAxis)
                 .duration(500);
 
-            //
-            // Filter out the bands that need to be hidden:
-            //
-            var bars = svg.selectAll(".bar").selectAll("rect")
-                .data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
+// update selection
 
-            bars.filter(function(d) {
-                return filtered.indexOf(d.key) > -1;
-            })
-                .transition()
-                .attr("x", function(d) {
-                    return (+d3.select(this).attr("x")) + (+d3.select(this).attr("width"))/2;
+            stackedBars = gg
+                .selectAll(".d3-group")
+                .data(stackedData, function (__data__, i, group) {
+                    return __data__.key;
+                });
+
+            // exit the whole group
+            stackedBars
+                .exit().remove();
+
+
+            // enter selection
+            stackedBarsEnter = stackedBars
+                .enter()
+                .append("g")
+                .attr("fill", function (d) {
+                    return z(d.key);
                 })
-                .attr("height",0)
-                .attr("width",0)
-                .attr("yScale", function(d) { return height; })
+                .attr("class", function (d, i) {
+                    return "d3-group d3-group-" + i;
+                });
+
+            // add path on enter
+            bars = stackedBarsEnter
+                .selectAll('rect')
+                .data(function (d) {
+                    return d;
+                })
+                .enter().append("rect")
+                .attr('class', 'd3-rect');
+
+// update + enter
+            stackedBars = stackedBars.merge(stackedBarsEnter);
+
+            stackedBars.selectAll('.d3-rect')
+                .data(function (d) {
+                    return d;
+                })
+                .transition()
+                .attr("x", function (d) {
+                    return xScale(d.data.State) + 40;
+                })
+                .attr("y", function (d) {
+                    return yScale(d[1]) + 20;
+                })
+                .attr("height", function (d) {
+                    return yScale(d[0]) - yScale(d[1]);
+                })
+                .attr("width", xScale.bandwidth())
                 .duration(500);
 
-            //
-            // Adjust the remaining bars:
-            //
-            bars.filter(function(d) {
-                return filtered.indexOf(d.key) == -1;
-            })
-                .transition()
-                .attr("x", function(d) { return x1Scale(d.key); })
-                .attr("y", function(d) { return yScale(d.value); })
-                .attr("height", function(d) { return height - yScale(d.value); })
-                .attr("width", x1Scale.bandwidth())
-                .attr("fill", function(d) { return z(d.key); })
-                .duration(500);
+            //Draw benchmark line
+            svg.selectAll(".benchmark")
+                .attr("x1", margin.left)
+                .attr("x2", width)
+                .attr("y1", yScale(5000000) + 20)
+                .attr("y2", yScale(5000000) + 20);
+
+            //Label benchmark line
+            svg.selectAll(".benchmarkLable")
+                .attr("x", margin.left + 10)
+                .attr("y", yScale(5000000) - 10 + 20)
+                .attr("dy", "0.32em")
+                .attr("fill", "#000")
+                .attr("font-size", "10px")
+                .attr("font-weight", "bold")
+                .attr("text-anchor", "start")
+                .text("Benchmark");
+
 
             // update legend:
             legend4.selectAll("circle")
@@ -530,10 +635,10 @@
         }
 
         function highlight() {
-                bar.filter(function (d) {
-                    return d.value > 6000000;
-                })
-                    .attr("fill", "red");
+            bars.filter(function (d) {
+                return (d[1]-d[0]) > 5000000;
+            })
+                .attr("fill", "red");
         }
 
     });

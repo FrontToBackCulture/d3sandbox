@@ -1,0 +1,40 @@
+{
+  "plugins": [
+    "plugins/markdown",
+    "plugins/summarize"
+  ],
+  "opts":{
+    "template": "./node_modules/ink-docstrap/template",
+    "recurse":true
+  },
+  "templates":{
+    "systemName": "VAL",
+    "footer": "",
+    "copyright": "Front To Back Culture VAL Copyright © 2013-2018",
+    "navType": "inline",
+    "theme": "slate",
+    "includeDate": true,
+    "collapseSymbols": true
+  },
+  "recurseDepth": 10,
+  "sourceType": "module",
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc","closure"]
+  },
+  "source": {
+    "exclude": [
+      ".archive",
+      "javascript",
+      "learning",
+      "sample",
+      "node_modules"
+    ],
+    "includePattern": ".+\\.js(doc|x)?$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  }
+}

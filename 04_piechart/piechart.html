@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reusable Donut Chart in D3 v4</title>
+    <script src="../javascript/d3.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="../css/d3.css">
+    <link rel="stylesheet" href="../css/piechart.css">
+    <script src="piechart.js"></script>
+</head>
+<body>
+<div class="card card-1">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 10px;">
+        <div class="legend4"></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="chart"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var donut = donutChart()
+        .width(560)
+        .height(300)
+        .cornerRadius(3) // sets how rounded the corners are on each slice
+        .padAngle(0.015) // effectively dictates the gap between slices
+        .variable('Probability')
+        .category('Species');
+
+    d3.dsv(",", "../data/species.csv", function(d) {
+        return {
+            Species: d.Species,
+            Probability: parseFloat(d.Probability),
+            Error: parseFloat(d.Error)
+        };
+    }).then(function(data){
+        d3.select('#chart')
+            .datum(data) // bind data to the div
+            .call(donut); // draw chart in div
+    });
+
+</script>
+
+</body>
+</html>

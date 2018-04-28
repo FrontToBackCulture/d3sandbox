@@ -119,7 +119,7 @@ path {
 
 </style>
 <body>
-<script src="d3.js"></script>
+<script src="../javascript/d3.js"></script>
 <!-- load the d3.js library -->
 <div id="tooltip" class="hidden">
     <p><strong>Important Label Heading</strong></p>
@@ -214,7 +214,7 @@ path {
     var keys = [];
 
     // Get the data
-        d3.dsv(",", "stocks.csv", function(d) {
+        d3.dsv(",", "../data/stocks.csv", function(d) {
             return {
                 date: parseDate(d.date),
                 price: +d.price,
