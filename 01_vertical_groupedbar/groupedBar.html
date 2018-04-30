@@ -6,8 +6,7 @@
 
 <script src="../javascript/d3.js"></script>
 <link rel="stylesheet" href="../css/d3.css">
-<link rel="stylesheet" href="../css/linechart.css">
-<script src="linechart.js"></script>
+<script src="groupedBar.js"></script>
 
 <div id="tooltip" class="hidden">
     <p><strong>Important Label Heading</strong></p>
@@ -39,28 +38,21 @@
 </div>
 
 <script>
-
-    // Parse the date / time
-    var parseDate = d3.timeParse("%b %Y");
-
-    var linechart = lineChart()
+    var groupedBar = groupedBarChart()
         .width(560)
         .height(300)
-        .benchMarkLine(100)
+        .benchMarkLine(6000000)
         .legendTrunc(10)
         .legendOffSet(55)
-        .highlightValue(100)
+        .highlightValue(6000000)
         .legendLoc('legend');
 
-    d3.dsv(",", "../data/stocks.csv", function (d, i, columns) {
-        return {
-            date: parseDate(d.date),
-            price: +d.price,
-            symbol: d.symbol
-        };
+    d3.dsv(",", "../data/data.csv", function (d, i, columns) {
+        for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+        return d;
     }).then(function (data) {
         d3.select('#chart')
             .datum(data)
-            .call(linechart);
+            .call(groupedBar);
     });
 </script>

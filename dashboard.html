@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+
+<script defer src="https://use.fontawesome.com/releases/v5.0.10/js/all.js" integrity="sha384-slN8GvtUJGnv6ca26v8EzVaR9DC58QEwsIk9q1QXdCU8Yu8ck/tL/5szYlBbqmS+" crossorigin="anonymous"></script>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="javascript/d3.js"></script>
+<link rel="stylesheet" href="css/d3.css">
+<link rel="stylesheet" href="css/linechart.css">
+<link rel="stylesheet" href="css/piechart.css">
+<link rel="stylesheet" href="css/commentary.css">
+<script src="01_vertical_groupedbar/groupedBar.js"></script>
+<script src="02_vertical_stackedbar/stackedBar.js"></script>
+<script src="03_linechart/linechart.js"></script>
+<script src="08_inverted_linechart/linechart.js"></script>
+<script src="04_piechart/piechart.js"></script>
+<script src="06_horizontal_groupedbar/groupedbar.js"></script>
+
+
+<div id="tooltip" class="hidden">
+    <p><strong>Important Label Heading</strong></p>
+    <p><span id="value">100</span></p>
+</div>
+<div id="legend_tooltip" class="hidden">
+    <p><span id="legend_value">100</span></p>
+</div>
+
+<div class="card2 card-2">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div style="font-size: 60px; text-align: center">52,000</div>
+        </div>
+    </div>
+</div>
+
+<div class="card2 card-2">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div style="font-size: 60px; text-align: center">52,000</div>
+        </div>
+    </div>
+</div>
+
+<div class="card2 card-2">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div style="font-size: 60px; text-align: center">52,000</div>
+        </div>
+    </div>
+</div>
+
+<div class="card2 card-2">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div style="font-size: 60px; text-align: center">52,000</div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-1">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 10px;">
+        <div class="legend"></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="chart"></div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-1">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 10px;">
+        <div class="legend2"></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="chart2"></div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-1">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 10px;">
+        <div class="legend3"></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="chart3"></div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-1">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 10px;">
+        <div class="legend5"></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="chart5"></div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-1">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 10px;">
+        <div class="legend4"><svg height="25" width="500"></svg></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="chart4"></div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-1">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 10px;">
+        <div class="legend6"></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="chart6"></div>
+        </div>
+    </div>
+</div>
+
+<div class="cardCommentary">
+    <!--<div class="thumbnail">-->
+    <!--</div>-->
+    <div class="right">
+        <h1>Why you Need More Magnesium in Your Daily Diet</h1>
+        <!--<div class="author"><img src="https://randomuser.me/api/portraits/men/95.jpg"/>
+          <h2>Igor MARTY</h2>
+        </div>-->
+        <div class="separator"></div>
+        <p>Magnesium is one of the six essential macro-minerals that is required by the body for energy production and synthesis of protein and enzymes. It contributes to the development of bones and most importantly it is responsible for synthesis of your DNA and RNA. A new report that has appeared in theBritish Journal of Cancer, gives you another reason to add more magnesium to your diet...</p>
+        <p>Magnesium is one of the six essential macro-minerals that is required by the body for energy production and synthesis of protein and enzymes. It contributes to the development of bones and most importantly it is responsible for synthesis of your DNA and RNA. A new report that has appeared in theBritish Journal of Cancer, gives you another reason to add more magnesium to your diet...</p>
+        <p>Magnesium is one of the six essential macro-minerals that is required by the body for energy production and synthesis of protein and enzymes. It contributes to the development of bones and most importantly it is responsible for synthesis of your DNA and RNA. A new report that has appeared in theBritish Journal of Cancer, gives you another reason to add more magnesium to your diet...</p>
+    </div>
+    <h5>12</h5>
+    <h6>JANUARY</h6>
+    <!-- <ul>
+       <li><i class="fa fa-eye fa-2x"></i></li>
+       <li><i class="fa fa-heart-o fa-2x"></i></li>
+       <li><i class="fa fa-envelope-o fa-2x"></i></li>
+       <li><i class="fa fa-share-alt fa-2x"></i></li>
+     </ul>-->
+    <!--<div class="fab"><i class="fa fa-arrow-down fa-3x"> </i></div>-->
+</div>
+
+<script>
+    var groupedBar = groupedBarChart()
+        .width(560)
+        .height(300)
+        .benchMarkLine(6000000)
+        .legendTrunc(10)
+        .legendOffSet(55)
+        .highlightValue(6000000)
+        .legendLoc('legend');
+
+    d3.dsv(",", "data/data.csv", function (d, i, columns) {
+        for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+        return d;
+    }).then(function (data) {
+        d3.select('#chart')
+            .datum(data)
+            .call(groupedBar);
+    });
+
+    var stackedBar = stackedBarChart()
+        .width(560)
+        .height(300)
+        .benchMarkLine(6000000)
+        .legendTrunc(10)
+        .legendOffSet(55)
+        .highlightValue(6000000)
+        .legendLoc('legend2');
+
+    d3.dsv(",", "data/data.csv", function (d, i, columns) {
+        for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+        return d;
+    }).then(function (data) {
+        d3.select('#chart2')
+            .datum(data)
+            .call(stackedBar);
+    });
+
+    // Parse the date / time
+    var parseDate = d3.timeParse("%b %Y");
+
+    var linechart = lineChart()
+        .width(560)
+        .height(300)
+        .benchMarkLine(100)
+        .legendTrunc(10)
+        .legendOffSet(55)
+        .highlightValue(100)
+        .legendLoc('legend3');
+
+    d3.dsv(",", "data/stocks.csv", function (d, i, columns) {
+        return {
+            date: parseDate(d.date),
+            price: +d.price,
+            symbol: d.symbol
+        };
+    }).then(function (data) {
+        d3.select('#chart3')
+            .datum(data)
+            .call(linechart);
+    });
+
+    var donut = donutChart()
+        .width(560)
+        .height(300)
+        .cornerRadius(3) // sets how rounded the corners are on each slice
+        .padAngle(0.015) // effectively dictates the gap between slices
+        .variable('Probability')
+        .category('Species');
+
+    d3.dsv(",", "data/species.csv", function(d) {
+        return {
+            Species: d.Species,
+            Probability: parseFloat(d.Probability),
+            Error: parseFloat(d.Error)
+        };
+    }).then(function(data){
+        d3.select('#chart4')
+            .datum(data) // bind data to the div
+            .call(donut); // draw chart in div
+    });
+
+    var inverted_linechart = inverted_lineChart()
+        .width(560)
+        .height(300)
+        .benchMarkLine(100)
+        .legendTrunc(10)
+        .legendOffSet(55)
+        .highlightValue(100)
+        .legendLoc('legend5');
+
+    d3.dsv(",", "data/stocks.csv", function (d, i, columns) {
+        return {
+            date: parseDate(d.date),
+            price: +d.price,
+            symbol: d.symbol
+        };
+    }).then(function (data) {
+        d3.select('#chart5')
+            .datum(data)
+            .call(inverted_linechart);
+    });
+
+    var h_groupedBar = h_groupedBarChart()
+        .width(560)
+        .height(300)
+        .benchMarkLine(6000000)
+        .legendTrunc(10)
+        .legendOffSet(55)
+        .highlightValue(6000000)
+        .legendLoc('legend6');
+
+    d3.dsv(",", "data/data.csv", function (d, i, columns) {
+        for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+        return d;
+    }).then(function (data) {
+        d3.select('#chart6')
+            .datum(data)
+            .call(h_groupedBar);
+    });
+</script>

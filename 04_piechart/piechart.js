@@ -23,7 +23,7 @@ String.prototype.trunc =
 function donutChart() {
     var width,
         height,
-        margin = {top: 10, right: 10, bottom: 10, left: 10},
+        margin = {top: 20, right: 20, bottom: 30, left: 40},
         colour = d3.scaleOrdinal(d3["schemeDark2"]), // colour scheme
         variable, // value in data that will dictate proportions on chart
         category, // compare data by
@@ -34,7 +34,6 @@ function donutChart() {
 
     function chart(selection){
         selection.each(function(data) {
-            console.log(data);
             // generate chart
 
             // ===========================================================================================

@@ -1,8 +1,8 @@
 /**
- * @module lineChart
+ * @module inverted_lineChart
  */
 
-function lineChart() {
+function inverted_lineChart() {
     var width,
         height,
         margin = {top: 20, right: 20, bottom: 30, left: 40},
@@ -41,10 +41,14 @@ function lineChart() {
             var width_legend = width - margin.left - margin.right,
                 height_legend = 25;
 
-
+            var dataL = 0;
             var legendOffSet = 55; //Melvin: space between legend
             var newdataL;
             var keys = [];
+
+            var svgLegned4 = d3.select('.'+legendLoc).append("svg")
+                .attr("width", width_legend)
+                .attr("height", height_legend);
 
             var dataNest = d3.nest()
                 .key(function(d) {return d.symbol;})
@@ -54,7 +58,7 @@ function lineChart() {
 
             // Set the ranges
             var xScale = d3.scaleTime().range([0, width]);
-            var yScale = d3.scaleLinear().range([height, 0]);
+            var yScale = d3.scaleLinear().range([0, height]);
 
             // Scale the range of the data
             xScale.domain(d3.extent(data, function(d) { return d.date; }));
@@ -146,12 +150,6 @@ function lineChart() {
                 .attr("text-anchor", "start")
                 .text("Benchmark");
 
-            var svgLegned4 = d3.select('.'+legendLoc).append("svg")
-                .attr("width", width_legend)
-                .attr("height", height_legend);
-
-            var dataL = 0;
-
             var dots=svg.selectAll(".dot")
                 .data(data)
                 .enter().append("circle") // Uses the enter().append() method
@@ -198,6 +196,8 @@ function lineChart() {
                         return d.color = color(d.key); })
                     .attr("id", 'tag'+d.key.replace(/\s+/g, '')) // assign an ID
                     .attr("d", priceline(d.values));
+
+
 
                 svgLegned4.append("circle")
                     .attr("transform", function () {
@@ -253,9 +253,9 @@ function lineChart() {
                     .attr("x", 40)  // space legend
                     .attr("y", 15)
                     // .attr("class", "legendText")    // style the legend
+                    .attr("font-size", "10px")
                     // .style("fill", function() { // Add the colours dynamically
                     //     return d.color = color(d.key); })
-                    .attr("font-size", "10px")
                     .text(d.key)
                     .on("mouseover", function() {
 
