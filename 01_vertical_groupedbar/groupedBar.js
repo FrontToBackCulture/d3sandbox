@@ -25,6 +25,8 @@ function groupedBarChart() {
                 : subString) + "...";
         };
 
+
+
     /**
      * @summary Draw grouped bar chart
      * @description Draw grouped bar chart
@@ -36,6 +38,8 @@ function groupedBarChart() {
      */
     function chart(selection) {
         selection.each(function (data) {
+
+
             var bar;
 
             var width_legend = width - margin.left - margin.right,
@@ -214,6 +218,12 @@ function groupedBarChart() {
                     d3.select("#legend_tooltip").classed("hidden", true);
                 });
 
+            var tool_tip = d3.tip()
+                .attr("class", "d3-tip")
+                .offset([-8, 0])
+                .html(function(d) { return d.key + " : " + d.value; });
+            svg.call(tool_tip);
+
             //Melvin: draw the rectangle on screen for each bar
             bar = g.append("g")
                 .selectAll("g")
@@ -246,7 +256,9 @@ function groupedBarChart() {
                 .attr("fill", function (d) {
                     return color(d.key);
                 })
-                .on("mouseover", function (d) {
+                .on('mouseover', tool_tip.show)
+                .on('mouseout', tool_tip.hide);
+               /* .on("mouseover", function (d) {
                     //Get this bar's x/y values, then augment for the tooltip
                     // var xPosition = parseFloat(d3.select(this).attr("x")) + x1Scale.bandwidth() / 2;
                     var xPosition = d3.event.pageX + 10;
@@ -257,6 +269,9 @@ function groupedBarChart() {
                     d3.select("#tooltip")
                         .style("left", xPosition + "px")
                         .style("top", yPosition + "px")
+                        .select("#labelname")
+                        .text(d.key + ":");
+                    d3.select("#tooltip")
                         .select("#value")
                         .text(d.value);
 
@@ -267,7 +282,7 @@ function groupedBarChart() {
                 .on("mouseout", function () {
                     //Hide the tooltip
                     d3.select("#tooltip").classed("hidden", true);
-                });
+                });*/
 
             //Draw End ===============================================================================================================
 

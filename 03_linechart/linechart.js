@@ -152,6 +152,14 @@ function lineChart() {
 
             var dataL = 0;
 
+            var tool_tip = d3.tip()
+                .attr("class", "d3-tip")
+                .offset([-8, 0])
+                .html(function(d) {
+                    return  "Date: " + d.date + " <br/> Price: " + d.price;
+                });
+            svg.call(tool_tip);
+
             var dots=svg.selectAll(".dot")
                 .data(data)
                 .enter().append("circle") // Uses the enter().append() method
@@ -161,6 +169,8 @@ function lineChart() {
                 .attr("r", 3)
                 .attr("fill","orange")
                 .attr("opacity",0.50)
+                .on('mouseover', tool_tip.show)
+                .on('mouseout', tool_tip.hide);/*
                 .on("mouseover", function(d) {
 
                     //Get this bar's x/y values, then augment for the tooltip
@@ -183,7 +193,7 @@ function lineChart() {
 
                     //Hide the tooltip
                     d3.select("#tooltip").classed("hidden", true);
-                });
+                });*/
 
 
 
@@ -196,7 +206,7 @@ function lineChart() {
                     .attr("class", "line")
                     .style("stroke", function() { // Add the colours dynamically
                         return d.color = color(d.key); })
-                    .attr("id", 'tag'+d.key.replace(/\s+/g, '')) // assign an ID
+                    .attr("id", legendLoc+d.key.replace(/\s+/g, '')) // assign an ID
                     .attr("d", priceline(d.values));
 
                 svgLegned4.append("circle")
@@ -220,7 +230,7 @@ function lineChart() {
                         var active   = d.active ? false : true,
                             newOpacity = active ? 0 : 1;
                         // Hide or show the elements based on the ID
-                        d3.select("#tag"+d.key.replace(/\s+/g, ''))
+                        d3.select("#"+legendLoc+d.key.replace(/\s+/g, ''))
                             .transition().duration(100)
                             .style("opacity", newOpacity);
                         // Update whether or not the elements are active
@@ -378,7 +388,9 @@ function lineChart() {
                     .attr("r", 3)
                     .attr("fill","orange")
                     .attr("opacity",0.50)
-                    .on("mouseover", function(d) {
+                    .on('mouseover', tool_tip.show)
+                    .on('mouseout', tool_tip.hide);
+                    /*.on("mouseover", function(d) {
 
                         //Get this bar's x/y values, then augment for the tooltip
                         // var xPosition = parseFloat(d3.select(this).attr("x")) + x1Scale.bandwidth() / 2;
@@ -400,7 +412,7 @@ function lineChart() {
 
                         //Hide the tooltip
                         d3.select("#tooltip").classed("hidden", true);
-                    });
+                    });*/
 
                 /*
                                 yScale.domain([0, d3.max(filtered_data, function(d) { return d.price; })]);

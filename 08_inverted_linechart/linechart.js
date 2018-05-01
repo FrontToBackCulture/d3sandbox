@@ -150,6 +150,14 @@ function inverted_lineChart() {
                 .attr("text-anchor", "start")
                 .text("Benchmark");
 
+            var tool_tip = d3.tip()
+                .attr("class", "d3-tip")
+                .offset([-8, 0])
+                .html(function(d) {
+                    return  "Date: " + d.date + " <br/> Price: " + d.price;
+                });
+            svg.call(tool_tip);
+
             var dots=svg.selectAll(".dot")
                 .data(data)
                 .enter().append("circle") // Uses the enter().append() method
@@ -159,7 +167,9 @@ function inverted_lineChart() {
                 .attr("r", 3)
                 .attr("fill","orange")
                 .attr("opacity",0.50)
-                .on("mouseover", function(d) {
+                .on('mouseover', tool_tip.show)
+                .on('mouseout', tool_tip.hide);
+/*                .on("mouseover", function(d) {
 
                     //Get this bar's x/y values, then augment for the tooltip
                     // var xPosition = parseFloat(d3.select(this).attr("x")) + x1Scale.bandwidth() / 2;
@@ -181,7 +191,7 @@ function inverted_lineChart() {
 
                     //Hide the tooltip
                     d3.select("#tooltip").classed("hidden", true);
-                });
+                });*/
 
 
 
@@ -194,7 +204,7 @@ function inverted_lineChart() {
                     .attr("class", "line")
                     .style("stroke", function() { // Add the colours dynamically
                         return d.color = color(d.key); })
-                    .attr("id", 'tag'+d.key.replace(/\s+/g, '')) // assign an ID
+                    .attr("id", legendLoc+d.key.replace(/\s+/g, '')) // assign an ID
                     .attr("d", priceline(d.values));
 
 
@@ -216,18 +226,19 @@ function inverted_lineChart() {
                     .attr("fill", color(d.key))
                     .attr("stroke", color(d.key))
                     .on("click", function(){
+
+                        console.log(d.key);
                         // Determine if current line is visible
                         var active   = d.active ? false : true,
                             newOpacity = active ? 0 : 1;
                         // Hide or show the elements based on the ID
-                        d3.select("#tag"+d.key.replace(/\s+/g, ''))
+                        d3.select("#"+legendLoc+d.key.replace(/\s+/g, ''))
                             .transition().duration(100)
                             .style("opacity", newOpacity);
                         // Update whether or not the elements are active
                         d.active = active;
                         d3.select(this).transition()
                             .attr("fill",function(){
-                                console.log(active)
                                 if (active == true) {
                                     return "white";
                                 } else{
@@ -354,17 +365,14 @@ function inverted_lineChart() {
 
                 });
 
-                console.log(filtered);
 
                 filtered_data = data.filter(function(sdata){
                     return filtered.indexOf(sdata.symbol) < 0;
                 });
-                console.log(filtered_data);
 
                 removed_data = data.filter(function(sdata){
                     return filtered.indexOf(sdata.symbol) > -1;
                 });
-                console.log(removed_data);
 
                 svg.selectAll(".dot")
                     .remove();
@@ -378,7 +386,9 @@ function inverted_lineChart() {
                     .attr("r", 3)
                     .attr("fill","orange")
                     .attr("opacity",0.50)
-                    .on("mouseover", function(d) {
+                    .on('mouseover', tool_tip.show)
+                    .on('mouseout', tool_tip.hide);
+                   /* .on("mouseover", function(d) {
 
                         //Get this bar's x/y values, then augment for the tooltip
                         // var xPosition = parseFloat(d3.select(this).attr("x")) + x1Scale.bandwidth() / 2;
@@ -401,7 +411,7 @@ function inverted_lineChart() {
                         //Hide the tooltip
                         d3.select("#tooltip").classed("hidden", true);
                     });
-
+*/
                 /*
                                 yScale.domain([0, d3.max(filtered_data, function(d) { return d.price; })]);
                 

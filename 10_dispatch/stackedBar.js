@@ -2,8 +2,9 @@
  * @module stackedBarChart
  */
 
-function h_stackedBarChart() {
+function stackedBarChart() {
     var width,
+        height,
         height,
         margin = {top: 20, right: 20, bottom: 30, left: 40},
         color = d3.scaleOrdinal(d3["schemeDark2"]);
@@ -41,6 +42,10 @@ function h_stackedBarChart() {
             var width_legend = width - margin.left - margin.right,
                 height_legend = 25;
 
+            dispatch.on("statechange.test", function(d) {
+               console.log(d)
+                update(d);
+            });
 
             dataset = data;
             keys = data.columns.slice(1); //Melvin: make the columns as keys for the data
@@ -52,6 +57,10 @@ function h_stackedBarChart() {
             });
 
             //var stackedData = d3.stack().keys(fKeys)(dataset);
+            //console.log(stackedData);
+            //console.log("smart");
+
+
             var test = d3.stack().keys(fKeys);
             test3 = test(dataset);
             //console.log(test3);
@@ -70,7 +79,7 @@ function h_stackedBarChart() {
                 }
             }
 
-            console.log(test3);
+            // console.log(test3);
             var stackedData = test3;
 
             var maxDataY = 1.2 * d3.max(stackedData.map(function (d) {
@@ -82,16 +91,16 @@ function h_stackedBarChart() {
             //Scale Start ===============================================================================================================
 
             // Melvin: The scale for spacing each group's bar: setup an ordinal scale for x the individual items within the groups
-            var yScale = d3.scaleBand().rangeRound([0, height]).padding(0.1);
+            var xScale = d3.scaleBand().rangeRound([0, width]).padding(0.1);
 
             // Melvin: The scale for y axis which is linear in nature and set the output range
-            var xScale = d3.scaleLinear().rangeRound([0, width]);
+            var yScale = d3.scaleLinear().rangeRound([height, 0]);
 
-            yScale.domain(dataset.map(function (d) {
+            xScale.domain(dataset.map(function (d) {
                 return d.State;
             }));
 
-            xScale.domain([0, maxDataY])
+            yScale.domain([0, maxDataY])
                 .nice();
 
             //Scale End ===============================================================================================================
@@ -99,12 +108,10 @@ function h_stackedBarChart() {
             //Axis Start ===============================================================================================================
 
             //Define X axis
-            // var xAxis = d3.axisBottom().scale(xScale).tickSizeInner(2).tickSizeOuter(0);
-            var xAxis = d3.axisBottom().scale(xScale).ticks(null, "s");
+            var xAxis = d3.axisBottom().scale(xScale).tickSizeInner(2).tickSizeOuter(0);
 
             //Define Y axis
-            // var yAxis = d3.axisLeft().scale(yScale).ticks(null, "s");
-            var yAxis = d3.axisLeft().scale(yScale).tickSizeInner(2).tickSizeOuter(0);
+            var yAxis = d3.axisLeft().scale(yScale).ticks(null, "s");
 
             //Axis End ===============================================================================================================
 
@@ -125,8 +132,8 @@ function h_stackedBarChart() {
              * @returns {yScale} Constructs a new left-oriented axis generator for the given scale, with empty tick arguments, a tick size of 6 and padding of 3. In this orientation,
              * ticks are drawn to the left of the vertical domain path.
              */
-            function make_x_gridlines() {
-                return d3.axisBottom(xScale);
+            function make_y_gridlines() {
+                return d3.axisLeft(yScale);
             }
 
             //Draw Start ===============================================================================================================
@@ -135,43 +142,42 @@ function h_stackedBarChart() {
             g.append("g")
                 .attr("class", "x axis")
                 .attr("transform", "translate(0," + height + ")")
-                .call(xAxis)
+                .call(xAxis);
+
+            //Melvin: draw the y axis
+            g.append("g")
+                .attr("class", "y axis")
+                .call(yAxis)
                 .append("text")
-                .attr("x", width-50)
-                .attr("y", -10)
+                .attr("x", 2)
+                .attr("y", yScale(yScale.ticks().pop()) + 0.5)
                 .attr("dy", "0.32em")
                 .attr("fill", "#000")
                 .attr("font-weight", "bold")
                 .attr("text-anchor", "start")
                 .text("Population"); //axes label
 
-
-            //Melvin: draw the y axis
-            g.append("g")
-                .attr("class", "y axis")
-                .call(yAxis);
-
             //Melvin: draw the gridline to show behind the chart
             svg.append("g")
                 .attr("class", "grid")
-                .call(make_x_gridlines()
-                    .tickSize(width)
+                .call(make_y_gridlines()
+                    .tickSize(-width)
                     .tickFormat("")
                 );
 
             //Draw benchmark line
             svg.append("line")
                 .attr("class", "line benchmark")
-                .attr("x1", xScale(benchMarkLine) + 40)
-                .attr("x2", xScale(benchMarkLine) + 40)
-                .attr("y1", 0)
-                .attr("y2", height);
+                .attr("x1", margin.left)
+                .attr("x2", width)
+                .attr("y1", yScale(benchMarkLine)+20)
+                .attr("y2", yScale(benchMarkLine)+20);
 
             //Label benchmark line
             svg.append("text")
                 .attr("class", "benchmarkLable")
-                .attr("x", xScale(benchMarkLine) + 45)
-                .attr("y", 5)
+                .attr("x", margin.left + 10)
+                .attr("y", yScale(benchMarkLine) +20 - 10)
                 .attr("dy", "0.32em")
                 .attr("fill", "#000")
                 .attr("font-size", "10px")
@@ -244,6 +250,7 @@ function h_stackedBarChart() {
                     d3.select("#legend_tooltip").classed("hidden", true);
                 });
 
+
             //Melvin: draw the rectangle
             // update selection
             stackedBars = gg
@@ -267,7 +274,7 @@ function h_stackedBarChart() {
                 .attr("class", "d3-tip")
                 .offset([-8, 0])
                 .html(function(d) {
-                    console.log(d);
+                    // console.log(d);
                     return  d.label + " : " + (d[1]-d[0]);
                 });
             svg.call(tool_tip);
@@ -280,26 +287,26 @@ function h_stackedBarChart() {
                 })
                 .enter().append("rect")
                 .attr('class', 'd3-rect')
-                .attr("x", function(d){
-                    return (xScale(d[0]) + 40)
+                .attr("x", function (d) {
+                    return xScale(d.data.State) + 40;
                 })
                 .attr("y", function (d) {
-                    // return yScale(d[1]) + 20;
-                    return (yScale(d.data.State ) + 20);
+                    return yScale(d[1]) + 20;
                 })
-                .attr("height", yScale.bandwidth())
-                .attr("width", function(d){
-                    return xScale(d[1]) - xScale(d[0])
+                .attr("height", function (d) {
+                    return yScale(d[0]) - yScale(d[1]);
                 })
+                .attr("width", xScale.bandwidth())
                 .on('mouseover', tool_tip.show)
                 .on('mouseout', tool_tip.hide);
-                /*.on("mouseover", function(d) {
+/*
+                .on("mouseover", function(d) {
 
                     //Get this bar's x/y values, then augment for the tooltip
                     // var xPosition = parseFloat(d3.select(this).attr("x")) + x1Scale.bandwidth() / 2;
-                    var xPosition = d3.event.pageX;
+                    var xPosition = d3.event.pageX+10;
                     // var yPosition = parseFloat(d3.select(this).attr("y")) / 2 + height / 2;
-                    var yPosition = d3.event.pageY - 10;
+                    var yPosition = d3.event.pageY;
 
                     //Update the tooltip position and value
                     d3.select("#tooltip")
@@ -316,7 +323,8 @@ function h_stackedBarChart() {
 
                     //Hide the tooltip
                     d3.select("#tooltip").classed("hidden", true);
-                });*/
+                });
+*/
 
             //Draw End ===============================================================================================================
 
@@ -330,7 +338,6 @@ function h_stackedBarChart() {
 
                     //Reset all to black
                     stackedBarsEnter.attr("fill", function(d) {
-                        console.log(color(d.key));
                         return color(d.key);
                     });
 
@@ -419,8 +426,6 @@ function h_stackedBarChart() {
                     }
                 })
 
-                // stackedData = d3.stack().keys(fKeys)(dataset);
-
                 test = d3.stack().keys(fKeys);
                 test3 = test(dataset);
                 //console.log(test3);
@@ -448,18 +453,18 @@ function h_stackedBarChart() {
                 }));
 
 
-                yScale.domain(dataset.map(function (d) {
+                xScale.domain(dataset.map(function (d) {
                     return d.State
                 }));
 
-                xScale.domain([0, maxDataY])
-                    .rangeRound([0,width]);
+                yScale.domain([0, maxDataY])
+                    .rangeRound([height, 0]);
 
 
                 // update the y axis:
-                svg.select(".x")
+                svg.select(".y")
                     .transition()
-                    .call(xAxis)
+                    .call(yAxis)
                     .duration(500);
 
                 // update selection
@@ -502,25 +507,26 @@ function h_stackedBarChart() {
                         return d;
                     })
                     .transition()
-                    .attr("x", function(d){
-                        return (xScale(d[0]) + 40)
+                    .attr("x", function (d) {
+                        return xScale(d.data.State) + 40;
                     })
                     .attr("y", function (d) {
-                        return (yScale(d.data.State ) + 20);
+                        return yScale(d[1]) + 20;
                     })
-                    .attr("height", yScale.bandwidth())
-                    .attr("width", function(d){
-                        return xScale(d[1]) - xScale(d[0])
+                    .attr("height", function (d) {
+                        return yScale(d[0]) - yScale(d[1]);
                     })
+                    .attr("width", xScale.bandwidth())
                     .duration(500);
+
 
                 /*bars.on("mouseover", function(d) {
 
                         //Get this bar's x/y values, then augment for the tooltip
                         // var xPosition = parseFloat(d3.select(this).attr("x")) + x1Scale.bandwidth() / 2;
-                        var xPosition = d3.event.pageX;
+                        var xPosition = d3.event.pageX+10;
                         // var yPosition = parseFloat(d3.select(this).attr("y")) / 2 + height / 2;
-                        var yPosition = d3.event.pageY - 10;
+                        var yPosition = d3.event.pageY;
 
                         //Update the tooltip position and value
                         d3.select("#tooltip")
@@ -539,23 +545,23 @@ function h_stackedBarChart() {
                         d3.select("#tooltip").classed("hidden", true);
                     });*/
 
-               //Draw benchmark line
-            svg.selectAll(".benchmark")
-                .attr("x1", xScale(benchMarkLine) + 40)
-                .attr("x2", xScale(benchMarkLine) + 40)
-                .attr("y1", 0)
-                .attr("y2", height);
+                //Draw benchmark line
+                svg.selectAll(".benchmark")
+                    .attr("x1", margin.left)
+                    .attr("x2", width)
+                    .attr("y1", yScale(5000000) + 20)
+                    .attr("y2", yScale(5000000) + 20);
 
-            //Label benchmark line
-            svg.selectAll(".benchmarkLable")
-                .attr("x", xScale(benchMarkLine) + 45)
-                .attr("y", 5)
-                .attr("dy", "0.32em")
-                .attr("fill", "#000")
-                .attr("font-size", "10px")
-                .attr("font-weight", "bold")
-                .attr("text-anchor", "start")
-                .text("Benchmark");
+                //Label benchmark line
+                svg.selectAll(".benchmarkLable")
+                    .attr("x", margin.left + 10)
+                    .attr("y", yScale(5000000) - 10 + 20)
+                    .attr("dy", "0.32em")
+                    .attr("fill", "#000")
+                    .attr("font-size", "10px")
+                    .attr("font-weight", "bold")
+                    .attr("text-anchor", "start")
+                    .text("Benchmark");
 
 
                 // update legend:

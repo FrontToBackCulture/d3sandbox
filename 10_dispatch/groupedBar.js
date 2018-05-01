@@ -1,8 +1,9 @@
 /**
- * @module stackedBarChart
+ * @module groupedBarChart
  */
 
-function h_stackedBarChart() {
+function groupedBarChart() {
+
     var width,
         height,
         margin = {top: 20, right: 20, bottom: 30, left: 40},
@@ -25,96 +26,71 @@ function h_stackedBarChart() {
                 : subString) + "...";
         };
 
+
+
     /**
-     * @summary Draw stacked bar chart
-     * @description Draw stacked bar chart
+     * @summary Draw grouped bar chart
+     * @description Draw grouped bar chart
      * @function chart
      * @public
      * @instance
      * @param {d3_selection} selection - d3 selection from html including the data to process
-     * @returns {svg} stacked bar chart svg
+     * @returns {svg} Grouped bar chart svg
      */
     function chart(selection) {
         selection.each(function (data) {
-            var dataset, keys, fKeys;
+
+
+            var bar;
 
             var width_legend = width - margin.left - margin.right,
                 height_legend = 25;
 
-
-            dataset = data;
-            keys = data.columns.slice(1); //Melvin: make the columns as keys for the data
-            fKeys = keys.slice();
-
-            //calculate total for each keys
-            dataset.forEach(function (d, i) {
-                d.total = d3.sum(d3.values(d).slice(1));
-            });
-
-            //var stackedData = d3.stack().keys(fKeys)(dataset);
-            var test = d3.stack().keys(fKeys);
-            test3 = test(dataset);
-            //console.log(test3);
-
-            // console.log(test3[0][0]);
-            // console.log(test3[0].length);
-            // console.log(test3[0][0][1]);
-
-            for (i = 0; i < test3.length; i++) {
-                // console.log(test3[i]);
-                // console.log(test3[i].key);
-                for (k=0; k < test3[i].length; k++){
-                    // console.log(test3[i][k]);
-                    //test3[i][k].push(['label',test3[i].key])
-                    test3[i][k].label = test3[i].key;
-                }
-            }
-
-            console.log(test3);
-            var stackedData = test3;
-
-            var maxDataY = 1.2 * d3.max(stackedData.map(function (d) {
-                return d3.max(d, function (innerD) {
-                    return innerD[1];
-                });
-            }));
+            var keys = data.columns.slice(1); //Melvin: make the columns as keys for the data
 
             //Scale Start ===============================================================================================================
 
+            // Melvin: The scale spacing the groups, setup an ordinal scale for x for the groups and set the output range
+            var x0Scale = d3.scaleBand().rangeRound([0, width]).paddingInner(0.1);
+
             // Melvin: The scale for spacing each group's bar: setup an ordinal scale for x the individual items within the groups
-            var yScale = d3.scaleBand().rangeRound([0, height]).padding(0.1);
+            var x1Scale = d3.scaleBand().padding(0.05);
 
             // Melvin: The scale for y axis which is linear in nature and set the output range
-            var xScale = d3.scaleLinear().rangeRound([0, width]);
+            var yScale = d3.scaleLinear().rangeRound([height, 0]);
 
-            yScale.domain(dataset.map(function (d) {
+            //Melvin: set the input value for the x scale with the defined domain
+            x0Scale.domain(data.map(function (d) {
                 return d.State;
             }));
 
-            xScale.domain([0, maxDataY])
-                .nice();
+            //Melvin: set the range for individual item to meet the individual group width
+            x1Scale.domain(keys).rangeRound([0, x0Scale.bandwidth()]);
+
+            //Melvin: set the input and find the max value based on the max value by iterating through all of its value in the array
+            yScale.domain([0, d3.max(data, function (d) {
+                return d3.max(keys, function (key) {
+                    return d[key];
+                });
+            })]).nice();
 
             //Scale End ===============================================================================================================
 
             //Axis Start ===============================================================================================================
 
             //Define X axis
-            // var xAxis = d3.axisBottom().scale(xScale).tickSizeInner(2).tickSizeOuter(0);
-            var xAxis = d3.axisBottom().scale(xScale).ticks(null, "s");
+            var xAxis = d3.axisBottom().scale(x0Scale);
 
             //Define Y axis
-            // var yAxis = d3.axisLeft().scale(yScale).ticks(null, "s");
-            var yAxis = d3.axisLeft().scale(yScale).tickSizeInner(2).tickSizeOuter(0);
+            var yAxis = d3.axisLeft().scale(yScale).ticks(null, "s");
 
             //Axis End ===============================================================================================================
 
             var svg = selection.append("svg")
-                .attr('width', width + margin.left + margin.right)
-                .attr('height', height + margin.top + margin.bottom);
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom);
 
             g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            var gg = svg.append('g').attr("class", "d3-group-wrap"); // keep d3 groups organized and used for correct clipping
 
             /**
              * @summary Draw y axis gridlines
@@ -125,8 +101,8 @@ function h_stackedBarChart() {
              * @returns {yScale} Constructs a new left-oriented axis generator for the given scale, with empty tick arguments, a tick size of 6 and padding of 3. In this orientation,
              * ticks are drawn to the left of the vertical domain path.
              */
-            function make_x_gridlines() {
-                return d3.axisBottom(xScale);
+            function make_y_gridlines() {
+                return d3.axisLeft(yScale);
             }
 
             //Draw Start ===============================================================================================================
@@ -135,43 +111,42 @@ function h_stackedBarChart() {
             g.append("g")
                 .attr("class", "x axis")
                 .attr("transform", "translate(0," + height + ")")
-                .call(xAxis)
+                .call(xAxis);
+
+            //Melvin: draw the y axis
+            g.append("g")
+                .attr("class", "y axis")
+                .call(yAxis)
                 .append("text")
-                .attr("x", width-50)
-                .attr("y", -10)
+                .attr("x", 2)
+                .attr("y", yScale(yScale.ticks().pop()) + 0.5)
                 .attr("dy", "0.32em")
                 .attr("fill", "#000")
                 .attr("font-weight", "bold")
                 .attr("text-anchor", "start")
                 .text("Population"); //axes label
 
-
-            //Melvin: draw the y axis
-            g.append("g")
-                .attr("class", "y axis")
-                .call(yAxis);
-
             //Melvin: draw the gridline to show behind the chart
             svg.append("g")
                 .attr("class", "grid")
-                .call(make_x_gridlines()
-                    .tickSize(width)
+                .call(make_y_gridlines()
+                    .tickSize(-width)
                     .tickFormat("")
                 );
 
             //Draw benchmark line
             svg.append("line")
                 .attr("class", "line benchmark")
-                .attr("x1", xScale(benchMarkLine) + 40)
-                .attr("x2", xScale(benchMarkLine) + 40)
-                .attr("y1", 0)
-                .attr("y2", height);
+                .attr("x1", margin.left)
+                .attr("x2", width)
+                .attr("y1", yScale(benchMarkLine)+20)
+                .attr("y2", yScale(benchMarkLine)+20);
 
             //Label benchmark line
             svg.append("text")
                 .attr("class", "benchmarkLable")
-                .attr("x", xScale(benchMarkLine) + 45)
-                .attr("y", 5)
+                .attr("x", margin.left + 10)
+                .attr("y", yScale(benchMarkLine) +20 - 10)
                 .attr("dy", "0.32em")
                 .attr("fill", "#000")
                 .attr("font-size", "10px")
@@ -244,76 +219,73 @@ function h_stackedBarChart() {
                     d3.select("#legend_tooltip").classed("hidden", true);
                 });
 
-            //Melvin: draw the rectangle
-            // update selection
-            stackedBars = gg
-                .selectAll(".d3-group")
-                .data(stackedData, function (__data__, i, group) {
-                    return __data__.key;
-                });
-
-            // enter selection
-            stackedBarsEnter = stackedBars
-                .enter()
-                .append("g")
-                .attr("fill", function (d) {
-                    return color(d.key);
-                })
-                .attr("class", function (d, i) {
-                    return "d3-group d3-group-" + i;
-                });
-
             var tool_tip = d3.tip()
                 .attr("class", "d3-tip")
                 .offset([-8, 0])
-                .html(function(d) {
-                    console.log(d);
-                    return  d.label + " : " + (d[1]-d[0]);
-                });
+                .html(function(d) { return d.key + " : " + d.value; });
             svg.call(tool_tip);
 
-            // add path on enter
-            bars = stackedBarsEnter
-                .selectAll('rect')
+            //Melvin: draw the rectangle on screen for each bar
+            bar = g.append("g")
+                .selectAll("g")
+                .data(data)
+                .enter().append("g")
+                .attr("class", "bar")
+                .attr("transform", function (d) {
+                    return "translate(" + x0Scale(d.State) + ",0)";
+                })
+                .selectAll("rect")
                 .data(function (d) {
-                    return d;
+                    return keys.map(function (key) {
+                        return {
+                            key: key,
+                            value: d[key]
+                        };
+                    });
                 })
                 .enter().append("rect")
-                .attr('class', 'd3-rect')
-                .attr("x", function(d){
-                    return (xScale(d[0]) + 40)
+                .attr("x", function (d) {
+                    return x1Scale(d.key);
                 })
                 .attr("y", function (d) {
-                    // return yScale(d[1]) + 20;
-                    return (yScale(d.data.State ) + 20);
+                    return yScale(d.value);
                 })
-                .attr("height", yScale.bandwidth())
-                .attr("width", function(d){
-                    return xScale(d[1]) - xScale(d[0])
+                .attr("width", x1Scale.bandwidth())
+                .attr("height", function (d) {
+                    return height - yScale(d.value);
+                })
+                .attr("fill", function (d) {
+                    return color(d.key);
+                })
+                .on('click', function(d){
+                    console.log(d.key);
+                    dispatch.call('statechange',this, (d.key));
+                    // dispatch.call("statechange", this, stateById.get("IN"));
                 })
                 .on('mouseover', tool_tip.show)
                 .on('mouseout', tool_tip.hide);
-                /*.on("mouseover", function(d) {
-
+               /* .on("mouseover", function (d) {
                     //Get this bar's x/y values, then augment for the tooltip
                     // var xPosition = parseFloat(d3.select(this).attr("x")) + x1Scale.bandwidth() / 2;
-                    var xPosition = d3.event.pageX;
+                    var xPosition = d3.event.pageX + 10;
                     // var yPosition = parseFloat(d3.select(this).attr("y")) / 2 + height / 2;
-                    var yPosition = d3.event.pageY - 10;
+                    var yPosition = d3.event.pageY;
 
                     //Update the tooltip position and value
                     d3.select("#tooltip")
                         .style("left", xPosition + "px")
                         .style("top", yPosition + "px")
+                        .select("#labelname")
+                        .text(d.key + ":");
+                    d3.select("#tooltip")
                         .select("#value")
-                        .text(d[1]-d[0]);
+                        .text(d.value);
 
                     //Show the tooltip
                     d3.select("#tooltip").classed("hidden", false);
 
                 })
-                .on("mouseout", function() {
-
+                .on("mouseout", function () {
                     //Hide the tooltip
                     d3.select("#tooltip").classed("hidden", true);
                 });*/
@@ -329,10 +301,9 @@ function h_stackedBarChart() {
                     var view = d3.select(this).node().value;
 
                     //Reset all to black
-                    stackedBarsEnter.attr("fill", function(d) {
-                        console.log(color(d.key));
+                    bar.attr("fill", function (d) {
                         return color(d.key);
-                    });
+                    })
 
                     //Filter and highlight based on different conditions
                     switch (view) {
@@ -363,37 +334,6 @@ function h_stackedBarChart() {
              * @param   {String} key - the key which indicates the legend being toggled
              */
             function update(d) {
-
-                // Go through both keys and fKeys to find out proper
-                // position to insert keyToToggle if it is to be inserted
-                var i, j;
-                for (i = 0, j = 0; i < keys.length; i++) {
-                    // If we hit the end of fKeys, keyToToggle
-                    // should be last
-                    if (j >= fKeys.length) {
-                        fKeys.push(d);
-                        break;
-                    }
-                    // if we found keyToToggle in fKeys - remove it
-                    if (fKeys[j] == d) {
-                        // remove it
-                        fKeys.splice(j, 1);
-                        break;
-                    }
-
-                    // we found keyToToggle in the original collection
-                    // AND it was not found at fKeys[j]. It means
-                    // it should be inserted to fKeys at position "j"
-                    if (keys[i] == d) {
-                        // add it
-                        fKeys.splice(j, 0, d);
-                        break;
-                    }
-
-                    if (keys[i] == fKeys[j])
-                        j++;
-                }
-
                 //
                 // Update the array to filter the chart by:
                 //
@@ -402,7 +342,7 @@ function h_stackedBarChart() {
                 if (filtered.indexOf(d) == -1) {
                     filtered.push(d);
                     // if all bars are un-checked, reset:
-                    if(filtered.length == keys.length) filtered = [];
+                    if (filtered.length == keys.length) filtered = [];
                 }
                 // otherwise remove it:
                 else {
@@ -413,155 +353,75 @@ function h_stackedBarChart() {
                 // Update the scales for each group(/states)'s items:
                 //
                 var newKeys = [];
-                keys.forEach(function(d) {
-                    if (filtered.indexOf(d) == -1 ) {
+                keys.forEach(function (d) {
+                    if (filtered.indexOf(d) == -1) {
                         newKeys.push(d);
                     }
                 })
-
-                // stackedData = d3.stack().keys(fKeys)(dataset);
-
-                test = d3.stack().keys(fKeys);
-                test3 = test(dataset);
-                //console.log(test3);
-
-                // console.log(test3[0][0]);
-                // console.log(test3[0].length);
-                // console.log(test3[0][0][1]);
-
-                for (i = 0; i < test3.length; i++) {
-                    // console.log(test3[i]);
-                    // console.log(test3[i].key);
-                    for (k=0; k < test3[i].length; k++){
-                        // console.log(test3[i][k]);
-                        //test3[i][k].push(['label',test3[i].key])
-                        test3[i][k].label = test3[i].key;
-                    }
-                }
-
-                stackedData = test3;
-
-                maxDataY = 1.2 * d3.max(stackedData.map(function (d) {
-                    return d3.max(d, function (innerD) {
-                        return innerD[1];
+                x1Scale.domain(newKeys).rangeRound([0, x0Scale.bandwidth()]);
+                yScale.domain([0, d3.max(data, function (d) {
+                    return d3.max(keys, function (key) {
+                        if (filtered.indexOf(key) == -1)
+                            return d[key];
                     });
-                }));
-
-
-                yScale.domain(dataset.map(function (d) {
-                    return d.State
-                }));
-
-                xScale.domain([0, maxDataY])
-                    .rangeRound([0,width]);
-
+                })]).nice();
 
                 // update the y axis:
-                svg.select(".x")
+                svg.select(".y")
                     .transition()
-                    .call(xAxis)
+                    .call(yAxis)
                     .duration(500);
 
-                // update selection
-                stackedBars = gg
-                    .selectAll(".d3-group")
-                    .data(stackedData, function (__data__, i, group) {
-                        return __data__.key;
-                    });
+                //
+                // Filter out the bands that need to be hidden:
+                //
+                var bars = svg.selectAll(".bar").selectAll("rect")
+                    .data(function (d) {
+                        return keys.map(function (key) {
+                            return {key: key, value: d[key]};
+                        });
+                    })
 
-                // exit the whole group
-                stackedBars
-                    .exit().remove();
+                bars.filter(function (d) {
+                    return filtered.indexOf(d.key) > -1;
+                })
+                    .transition()
+                    .attr("x", function (d) {
+                        return (+d3.select(this).attr("x")) + (+d3.select(this).attr("width")) / 2;
+                    })
+                    .attr("height", 0)
+                    .attr("width", 0)
+                    .attr("yScale", function (d) {
+                        return height;
+                    })
+                    .duration(500);
 
-
-                // enter selection
-                stackedBarsEnter = stackedBars
-                    .enter()
-                    .append("g")
+                //
+                // Adjust the remaining bars:
+                //
+                bars.filter(function (d) {
+                    return filtered.indexOf(d.key) == -1;
+                })
+                    .transition()
+                    .attr("x", function (d) {
+                        return x1Scale(d.key);
+                    })
+                    .attr("y", function (d) {
+                        return yScale(d.value);
+                    })
+                    .attr("height", function (d) {
+                        return height - yScale(d.value);
+                    })
+                    .attr("width", x1Scale.bandwidth())
                     .attr("fill", function (d) {
                         return color(d.key);
                     })
-                    .attr("class", function (d, i) {
-                        return "d3-group d3-group-" + i;
-                    });
-
-                // add path on enter
-                bars = stackedBarsEnter
-                    .selectAll('rect')
-                    .data(function (d) {
-                        return d;
-                    })
-                    .enter().append("rect")
-                    .attr('class', 'd3-rect');
-
-                // update + enter
-                stackedBars = stackedBars.merge(stackedBarsEnter);
-
-                stackedBars.selectAll('.d3-rect')
-                    .data(function (d) {
-                        return d;
-                    })
-                    .transition()
-                    .attr("x", function(d){
-                        return (xScale(d[0]) + 40)
-                    })
-                    .attr("y", function (d) {
-                        return (yScale(d.data.State ) + 20);
-                    })
-                    .attr("height", yScale.bandwidth())
-                    .attr("width", function(d){
-                        return xScale(d[1]) - xScale(d[0])
-                    })
                     .duration(500);
-
-                /*bars.on("mouseover", function(d) {
-
-                        //Get this bar's x/y values, then augment for the tooltip
-                        // var xPosition = parseFloat(d3.select(this).attr("x")) + x1Scale.bandwidth() / 2;
-                        var xPosition = d3.event.pageX;
-                        // var yPosition = parseFloat(d3.select(this).attr("y")) / 2 + height / 2;
-                        var yPosition = d3.event.pageY - 10;
-
-                        //Update the tooltip position and value
-                        d3.select("#tooltip")
-                            .style("left", xPosition + "px")
-                            .style("top", yPosition + "px")
-                            .select("#value")
-                            .text(d[1]-d[0]);
-
-                        //Show the tooltip
-                        d3.select("#tooltip").classed("hidden", false);
-
-                    })
-                    .on("mouseout", function() {
-
-                        //Hide the tooltip
-                        d3.select("#tooltip").classed("hidden", true);
-                    });*/
-
-               //Draw benchmark line
-            svg.selectAll(".benchmark")
-                .attr("x1", xScale(benchMarkLine) + 40)
-                .attr("x2", xScale(benchMarkLine) + 40)
-                .attr("y1", 0)
-                .attr("y2", height);
-
-            //Label benchmark line
-            svg.selectAll(".benchmarkLable")
-                .attr("x", xScale(benchMarkLine) + 45)
-                .attr("y", 5)
-                .attr("dy", "0.32em")
-                .attr("fill", "#000")
-                .attr("font-size", "10px")
-                .attr("font-weight", "bold")
-                .attr("text-anchor", "start")
-                .text("Benchmark");
-
 
                 // update legend:
                 legend.selectAll("circle")
                     .transition()
-                    .attr("fill",function(d) {
+                    .attr("fill", function (d) {
                         if (filtered.length) {
                             if (filtered.indexOf(d) == -1) {
                                 return color(d);
@@ -575,6 +435,24 @@ function h_stackedBarChart() {
                         }
                     })
                     .duration(100);
+
+                //Draw benchmark line
+                svg.selectAll(".benchmark")
+                    .attr("x1", margin.left)
+                    .attr("x2", width)
+                    .attr("y1", yScale(benchMarkLine) + 20)
+                    .attr("y2", yScale(benchMarkLine) + 20);
+
+                //Label benchmark line
+                svg.selectAll(".benchmarkLable")
+                    .attr("x", margin.left + 10)
+                    .attr("y", yScale(benchMarkLine) - 10 + 20)
+                    .attr("dy", "0.32em")
+                    .attr("fill", "#000")
+                    .attr("font-size", "10px")
+                    .attr("font-weight", "bold")
+                    .attr("text-anchor", "start")
+                    .text("Benchmark");
             }
 
 
@@ -586,8 +464,8 @@ function h_stackedBarChart() {
              * @instance
              */
             function highlight() {
-                bars.filter(function (d) {
-                    return (d[1]-d[0]) > highlightValue;
+                bar.filter(function (d) {
+                    return d.value > highlightValue;
                 })
                     .attr("fill", "red");
             }

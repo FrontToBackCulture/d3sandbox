@@ -44,7 +44,33 @@ img.left {
   margin-right: 20px;
 }
 
-h1 {
+/*h1 {
+  padding-top: 15px;
+  font-size: 1.3rem;
+  color: #4B4B4B;
+}*/
+
+.cardCommentary .heading h1 {
+  font-size: 15px;
+  font-family: sans-serif;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-top:15px;
+  margin-bottom:5px;
+  color: #333;
+}
+
+.cardCommentary .heading h2 {
+  font-size: 12px;
+  font-family: sans-serif;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-top:5px;
+  margin-bottom:5px;
+  color: #666;
+}
+
+.cardCommentary .heading h3 {
   padding-top: 15px;
   font-size: 1.3rem;
   color: #4B4B4B;
@@ -90,7 +116,7 @@ p {
 h5 {
   position: absolute;
   left: 30px;
-  bottom: 80px;
+  bottom: 15px;
   font-size: 6rem;
   color: #C3C3C3;
 }
@@ -98,7 +124,7 @@ h5 {
 h6 {
   position: absolute;
   left: 30px;
-  bottom: 55px;
+  bottom: 0px;
   font-size: 2rem;
   color: #C3C3C3;
 }

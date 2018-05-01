@@ -5,18 +5,19 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
 <script src="../javascript/d3.js"></script>
-<script src="d3-tip.js"></script>
+<script src="../javascript/d3-tip.js"></script>
 <link rel="stylesheet" href="../css/d3.css">
+<link rel="stylesheet" href="../css/linechart.css">
+<link rel="stylesheet" href="../css/piechart.css">
+<link rel="stylesheet" href="../css/commentary.css">
 <script src="groupedBar.js"></script>
+<script src="stackedBar.js"></script>
+<script src="../03_linechart/linechart.js"></script>
+<script src="../08_inverted_linechart/linechart.js"></script>
+<script src="../04_piechart/piechart.js"></script>
+<script src="../06_horizontal_groupedbar/groupedbar.js"></script>
+<script src="../07_horizontal_stackedbar/stackedbar.js"></script>
 
-<!--<div id="tooltip" class="hidden">
-    <span class="row">
-        <span style="text-align: right; color: #969696" id="labelname">test:</span>
-        <span style="text-align: left" id="value">100</span>
-    </div>
-    &lt;!&ndash;<p><strong>Important Label Heading</strong></p>&ndash;&gt;
-    &lt;!&ndash;<p><span id="value">100</span></p>&ndash;&gt;
-</div>-->
 <div id="legend_tooltip" class="hidden">
     <p><span id="legend_value">100</span></p>
 </div>
@@ -25,8 +26,7 @@
     <div class="row heading">
         <div class="col-xs-10">
             <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
-            <h2>by IT Area</h2><span><input type="radio" name="highlightPreset" value="none" checked="true"> None
-			<input type="radio" name="highlightPreset" value="highlight"> Highlight</span>
+            <h2>by IT Area</h2>
         </div>
         <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
             <i class="fas fa-ellipsis-v"></i>
@@ -42,7 +42,30 @@
     </div>
 </div>
 
+<div class="card card-1">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="col-xs-2 icon" style="vertical-align: middle; text-align: center; margin-top: 15px">
+            <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 10px;">
+        <div class="legend2"></div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="chart2"></div>
+        </div>
+    </div>
+</div>
+
 <script>
+
+    var dispatch = d3.dispatch('statechange');
+
     var groupedBar = groupedBarChart()
         .width(560)
         .height(300)
@@ -60,4 +83,24 @@
             .datum(data)
             .call(groupedBar);
     });
+
+    var stackedBar = stackedBarChart()
+        .width(560)
+        .height(300)
+        .benchMarkLine(6000000)
+        .legendTrunc(10)
+        .legendOffSet(55)
+        .highlightValue(6000000)
+        .legendLoc('legend2');
+
+    d3.dsv(",", "../data/data.csv", function (d, i, columns) {
+        for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+        return d;
+    }).then(function (data) {
+        d3.select('#chart2')
+            .datum(data)
+            .call(stackedBar);
+    });
+
+
 </script>

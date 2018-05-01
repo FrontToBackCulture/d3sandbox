@@ -5,13 +5,14 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
 <script src="../javascript/d3.js"></script>
+<script src="../javascript/d3-tip.js"></script>
 <link rel="stylesheet" href="../css/d3.css">
 <script src="stackedBar.js"></script>
 
-<div id="tooltip" class="hidden">
-    <p><strong>Important Label Heading</strong></p>
-    <p><span id="value">100</span></p>
-</div>
+<!--<div id="tooltip" class="hidden">-->
+    <!--<p><strong>Important Label Heading</strong></p>-->
+    <!--<p><span id="value">100</span></p>-->
+<!--</div>-->
 <div id="legend_tooltip" class="hidden">
     <p><span id="legend_value">100</span></p>
 </div>
@@ -44,7 +45,8 @@
         .benchMarkLine(6000000)
         .legendTrunc(10)
         .legendOffSet(55)
-        .highlightValue(6000000);
+        .highlightValue(6000000)
+        .legendLoc('legend');
 
     d3.dsv(",", "../data/data.csv", function (d, i, columns) {
         for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
