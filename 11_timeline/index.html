@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+
+<script defer src="https://use.fontawesome.com/releases/v5.0.10/js/all.js" integrity="sha384-slN8GvtUJGnv6ca26v8EzVaR9DC58QEwsIk9q1QXdCU8Yu8ck/tL/5szYlBbqmS+" crossorigin="anonymous"></script>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+
+
+<link type="text/css" href="http://mbostock.github.io/d3/style.css" rel="stylesheet" />
+<link rel="stylesheet" href="../css/d3.css">
+<link rel="stylesheet" href="../css/gantt.css">
+<script src="../javascript/d3.js"></script>
+<script src="../javascript/d3-tip.js"></script>
+<script type="text/javascript" src="gantt.js"></script>
+
+<div id="legend_tooltip" class="hidden">
+    <p><span id="legend_value">100</span></p>
+</div>
+
+<div class="card card-1">
+    <div class="row heading">
+        <div class="col-xs-10">
+            <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
+            <h2>by IT Area</h2>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <div id="chart"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <button type="button" onclick="addTask()">Add Task</button>
+                <button type="button" onclick="removeTask()">Remove Task</button>
+                <button type="button" onclick="changeTimeDomain('1hr')">1 HR</button>
+                <button type="button" onclick="changeTimeDomain('3hr')">3 HR</button>
+                <button type="button" onclick="changeTimeDomain('6hr')">6 HR</button>
+                <button type="button" onclick="changeTimeDomain('1day')">1 DAY</button>
+                <button type="button" onclick="changeTimeDomain('1week')">1 WEEK</button>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    // Parse the date / time
+    var parseDate = d3.timeParse("%b %Y");
+
+    d3.dsv(",", "../data/timeline.csv", function (d, i, columns) {
+        return {
+            startDate: parseDate(d.startDate),
+            endDate: parseDate(d.endDate),
+            status: d.status,
+            taskName: d.taskName
+        };
+    }).then(function (data) {
+        var taskStatus = {
+            "SUCCEEDED" : "bar",
+            "FAILED" : "bar-failed",
+            "RUNNING" : "bar-running",
+            "KILLED" : "bar-killed"
+        };
+
+        var taskNames = [ "D Job", "P Job", "E Job", "A Job", "N Job" ];
+
+        data.sort(function(a, b) {
+            return a.endDate - b.endDate;
+        });
+        var maxDate = data[data.length - 1].endDate;
+        data.sort(function(a, b) {
+            return a.startDate - b.startDate;
+        });
+        var minDate = data[0].startDate;
+
+        var format = "%H:%M";
+        var timeDomainString = "1day";
+
+        var gantt = d3.gantt().height(450).width(800).taskTypes(taskNames).taskStatus(taskStatus).tickFormat(format);
+
+        // gantt.timeDomainMode("fixed");
+        changeTimeDomain(timeDomainString);
+        gantt(data);
+
+    });
+</script>
+
+
+
+
