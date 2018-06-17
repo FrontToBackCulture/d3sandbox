@@ -3,7 +3,7 @@ var tasks = [
     {"startDate":new Date("Sun Dec 09 08:49:53 EST 2012"),"endDate":new Date("Sun Dec 09 06:34:04 EST 2012"),"taskName":"D Job","status":"RUNNING"},
     {"startDate":new Date("Sun Dec 09 03:27:35 EST 2012"),"endDate":new Date("Sun Dec 09 03:58:43 EST 2012"),"taskName":"P Job","status":"SUCCEEDED"},
     {"startDate":new Date("Sun Dec 09 03:27:35 EST 2012"),"endDate":new Date("Sun Dec 09 03:58:43 EST 2012"),"taskName":"N Job","status":"KILLED"}
-];
+];  
 
 // var svg2 = d3.select("body").append("svg")
 // .attr("width", 960)
