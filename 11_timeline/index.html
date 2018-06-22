@@ -12,6 +12,7 @@
 <script src="../javascript/d3.js"></script>
 <script src="../javascript/d3-tip.js"></script>
 <script type="text/javascript" src="gantt.js"></script>
+<script type="text/javascript" src="timeline.js"></script>
 
 <div id="legend_tooltip" class="hidden">
     <p><span id="legend_value">100</span></p>
@@ -23,11 +24,7 @@
             <h1>Variance Plan %, Variance Lastest Estiamte % - Quarter</h1>
             <h2>by IT Area</h2>
         </div>
-        <div class="row">
-            <div class="col-xs-12">
-                <div id="chart"></div>
-            </div>
-        </div>
+    </div>
         <div class="row">
             <div class="col-xs-12">
                 <button type="button" onclick="addTask()">Add Task</button>
@@ -39,61 +36,43 @@
                 <button type="button" onclick="changeTimeDomain('1week')">1 WEEK</button>
             </div>
         </div>
-    </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <div id="chart"></div>
+            </div>
+        </div>
 </div>
 
 <script>
     // Parse the date / time
     //var parseDate = d3.timeParse("%b %Y");
 
+    var ganttChart = ganttChart()
+        .width(560)
+        .height(300);
+
     d3.dsv(",", "../data/timeline.csv", function (d, i, columns) {
-       
+
         return {
             //startDate: parseDate(d.startDate),
             //endDate: parseDate(d.endDate),
             startDate: new Date(d.startDate),
             endDate: new Date(d.endDate),
-            status: d.status,
-            taskName: d.taskName
+            taskName: d.taskName,
+            status: d.status
         };
-        
+
     }).then(function (data) {
-    
-    tasks = [
-    {"startDate":new Date("Sun Dec 09 00:00:45 EST 2012"),"endDate":new Date("Sun Dec 09 02:36:45 EST 2012"),"taskName":"E Job","status":"RUNNING"},
-    {"startDate":new Date("Sun Dec 09 08:49:53 EST 2012"),"endDate":new Date("Sun Dec 09 06:34:04 EST 2012"),"taskName":"D Job","status":"RUNNING"},
-    {"startDate":new Date("Sun Dec 09 03:27:35 EST 2012"),"endDate":new Date("Sun Dec 09 03:58:43 EST 2012"),"taskName":"P Job","status":"SUCCEEDED"},
-    {"startDate":new Date("Sun Dec 09 03:27:35 EST 2012"),"endDate":new Date("Sun Dec 09 03:58:43 EST 2012"),"taskName":"N Job","status":"KILLED"}
-];
-        
-        var taskStatus = {
-            "SUCCEEDED" : "bar",
-            "FAILED" : "bar-failed",
-            "RUNNING" : "bar-running",
-            "KILLED" : "bar-killed"
-        };
-
-        var taskNames = [ "D Job", "P Job", "E Job", "A Job", "N Job" ];
-
-        tasks.sort(function(a, b) {
-            return a.endDate - b.endDate;
-        });
-        var maxDate = tasks[tasks.length - 1].endDate;
-        tasks.sort(function(a, b) {
-            return a.startDate - b.startDate;
-        });
-        var minDate = tasks[0].startDate;
-
-        var format = "%H:%M";
-        var timeDomainString = "1day";
-
-        var gantt = d3.gantt().height(450).width(800).taskTypes(taskNames).taskStatus(taskStatus).tickFormat(format);
-
-        // gantt.timeDomainMode("fixed");
-        changeTimeDomain(timeDomainString);
-        gantt(tasks);
+        console.log(data);
+         d3.select('#chart')
+             .datum(data)
+             .call(ganttChart);
 
     });
+
+
+
+
 </script>
 
 

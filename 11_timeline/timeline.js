@@ -3,41 +3,117 @@
  */
 
 function ganttChart() {
-    var width,
-        height,
-        margin = {top: 20, right: 20, bottom: 30, left: 40},
-        color = d3.scaleOrdinal(d3["schemeDark2"]);
 
-    var legendLoc,
-        legendTrunc,
-        legendOffSet,
-        highlightValue; //Melvin: space between legend
-
-    String.prototype.trunc =
-        function (n, useWordBoundary) {
-            if (this.length <= n) {
-                return this;
-            }
-            var subString = this.substr(0, n - 1);
-            return (useWordBoundary
-                ? subString.substr(0, subString.lastIndexOf(' '))
-                : subString) + "...";
-        };
-
-
-
-    /**
-     * @summary Draw grouped bar chart
-     * @description Draw grouped bar chart
-     * @function chart
-     * @public
-     * @instance
-     * @param {d3_selection} selection - d3 selection from html including the data to process
-     * @returns {svg} Grouped bar chart svg
-     */
     function chart(selection) {
+
+        var width,
+            height;
+
         selection.each(function (data) {
 
+            var tasks=data;
+        console.log(tasks);
+
+        var taskStatus = {
+            "SUCCEEDED" : "bar",
+            "FAILED" : "bar-failed",
+            "RUNNING" : "bar-running",
+            "KILLED" : "bar-killed"
+        };
+
+        var taskNames = [ "D Job", "P Job", "E Job", "A Job", "N Job" ];
+
+        tasks.sort(function(a, b) {
+            return a.endDate - b.endDate;
+        });
+
+        var maxDate = tasks[tasks.length - 1].endDate;
+
+        tasks.sort(function(a, b) {
+            return a.startDate - b.startDate;
+        });
+        var minDate = tasks[0].startDate;
+
+        var format = "%H:%M";
+        var timeDomainString = "1day";
+
+        var gantt = d3.gantt().height(450).width(800).taskTypes(taskNames).taskStatus(taskStatus).tickFormat(format);
+
+        // gantt.timeDomainMode("fixed");
+        changeTimeDomain(timeDomainString);
+        gantt(tasks);
+
+            function changeTimeDomain(timeDomainString) {
+                this.timeDomainString = timeDomainString;
+                switch (timeDomainString) {
+                    case "1hr":
+                        format = "%H:%M:%S";
+                        gantt.timeDomain([ d3.timeHour.offset(getEndDate(), -1), getEndDate() ]);
+                        break;
+                    case "3hr":
+                        format = "%H:%M";
+                        gantt.timeDomain([ d3.timeHour.offset(getEndDate(), -3), getEndDate() ]);
+                        break;
+
+                    case "6hr":
+                        format = "%H:%M";
+                        gantt.timeDomain([ d3.timeHour.offset(getEndDate(), -6), getEndDate() ]);
+                        break;
+
+                    case "1day":
+                        format = "%H:%M";
+                        gantt.timeDomain([ d3.timeDay.offset(getEndDate(), -1), getEndDate() ]);
+                        break;
+
+                    case "1week":
+                        format = "%a %H:%M";
+                        gantt.timeDomain([ d3.timeDay.offset(getEndDate(), -7), getEndDate() ]);
+                        break;
+                    default:
+                        format = "%H:%M"
+
+                }
+                gantt.tickFormat(format);
+                gantt.redraw(tasks);
+            }
+
+            function getEndDate() {
+                var lastEndDate = Date.now();
+                if (tasks.length > 0) {
+                    lastEndDate = tasks[tasks.length - 1].endDate;
+                }
+                return lastEndDate;
+            }
+
+            function addTask() {
+
+                var lastEndDate = getEndDate();
+                var taskStatusKeys = Object.keys(taskStatus);
+                var taskStatusName = taskStatusKeys[Math.floor(Math.random() * taskStatusKeys.length)];
+                var taskName = taskNames[Math.floor(Math.random() * taskNames.length)];
+
+                tasks.push({
+                    "startDate" : d3.timeHour.offset(lastEndDate, Math.ceil(1 * Math.random())),
+                    "endDate" : d3.timeHour.offset(lastEndDate, (Math.ceil(Math.random() * 3)) + 1),
+                    "taskName" : taskName,
+                    "status" : taskStatusName
+                });
+
+                changeTimeDomain(timeDomainString);
+                gantt.redraw(tasks);
+            }
+
+            function removeTask() {
+                tasks.pop();
+                changeTimeDomain(timeDomainString);
+                gantt.redraw(tasks);
+            }
+
+
+            d3.selectAll("button")
+                .on("click", function () {
+                    addTask();
+                });
 
 
 
@@ -56,36 +132,5 @@ function ganttChart() {
         return chart;
     };
 
-    chart.benchMarkLine = function(value) {
-        if (!arguments.length) return benchMarkLine;
-        benchMarkLine = value;
-        return chart;
-    };
-
-    chart.legendTrunc = function(value) {
-        if (!arguments.length) return legendTrunc;
-        legendTrunc = value;
-        return chart;
-    };
-
-    chart.legendOffSet = function(value) {
-        if (!arguments.length) return legendOffSet;
-        legendOffSet = value;
-        return chart;
-    };
-
-    chart.highlightValue = function(value) {
-        if (!arguments.length) return highlightValue;
-        highlightValue = value;
-        return chart;
-    };
-
-    chart.legendLoc = function(value) {
-        if (!arguments.length) return legendLoc;
-        legendLoc = value;
-        return chart;
-    };
-
     return chart;
-
 }
